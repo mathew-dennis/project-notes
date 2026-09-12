@@ -138,7 +138,7 @@ module.exports = sequelize;
 
 ---
 
-## Step 5: Models Directory & `User.js`
+## Step 5: Models — `User.js`, `Application.js`, and Associations
 
 Create the models directory:
 
@@ -146,7 +146,7 @@ Create the models directory:
 mkdir models
 ```
 
-Create `models/User.js`. Below is a starter Sequelize model — adjust fields to match what your project actually needs:
+### 5.1 `models/User.js`
 
 ```js
 // models/User.js
@@ -183,24 +183,90 @@ module.exports = User;
 
 > `role` is an ENUM covering the app's user types: `applicant`, `doc_reviewer`, `visa_staff`, `manager`, `admin`. Only `created_at` is tracked (no `updated_at` column).
 
+### 5.2 `models/Application.js`
+
+```js
+// models/Application.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../db');
+
+const Application = sequelize.define('Application', {
+  app_id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  user_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users', // Matches the table name created by User.js
+      key: 'user_id'
+    }
+  },
+  visa_type: {
+    type: DataTypes.STRING(50),
+    allowNull: false
+  },
+  passport_number: {
+    type: DataTypes.STRING(255), // Set length to 255 to accommodate encrypted string data
+    allowNull: false
+  },
+  photo_path: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  doc_path: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  status: {
+    type: DataTypes.STRING(50),
+    defaultValue: 'Draft'
+  }
+}, {
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at'
+});
+
+module.exports = Application;
+```
+
+### 5.3 `models/index.js` — Associations
+
+Centralizing associations in one file keeps the foreign key link clean (one user → many applications):
+
+```js
+// models/index.js
+const User = require('./User');
+const Application = require('./Application');
+
+// One User can have Many Applications
+User.hasMany(Application, { foreignKey: 'user_id' });
+Application.belongsTo(User, { foreignKey: 'user_id' });
+
+module.exports = { User, Application };
+```
+
 ---
 
 ## Step 6: Create `index.js` and Test Table Creation
 
-Create `index.js` in the project root:
+Create `index.js` in the project root, importing both models (and their associations) from `models/index.js` so Sequelize registers the foreign key before syncing:
 
 ```js
 // index.js
 const express = require('express');
 const sequelize = require('./db');
-const User = require('./models/User');
+const { User, Application } = require('./models'); // Imports both models and associations
 
 const app = express();
 app.use(express.json());
 
 // Sync models with MySQL database
 sequelize.sync()
-  .then(() => console.log('Database & tables synced successfully!'))
+  .then(() => console.log('Database & tables (Users, Applications) synced successfully!'))
   .catch(err => console.error('Database sync error:', err));
 
 app.listen(5000, () => {
@@ -236,10 +302,10 @@ You should see:
 
 ```
 Server running on http://localhost:5000
-Database & tables synced successfully!
+Database & tables (Users, Applications) synced successfully!
 ```
 
-If you see this, `sequelize.sync()` has created the `Users` table in `evlvs_db` based on the `User` model.
+If you see this, `sequelize.sync()` has created both the `Users` and `Applications` tables in `evlvs_db`, with `user_id` set up as a foreign key on `Applications` referencing `Users`.
 
 ---
 
@@ -249,7 +315,9 @@ If you see this, `sequelize.sync()` has created the `Users` table in `evlvs_db` 
 evlvs-backend/
 ├── node_modules/
 ├── models/
-│   └── User.js
+│   ├── User.js
+│   ├── Application.js
+│   └── index.js
 ├── db.js
 ├── index.js
 ├── package.json
