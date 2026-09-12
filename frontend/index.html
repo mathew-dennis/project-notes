@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Registration</title>
+</head>
+<body>
+
+  <h2>User Registration</h2>
+
+  <form id="registrationForm">
+    <!-- Email Field -->
+    <label for="email">Email:</label><br>
+    <input type="email" id="email" required><br><br>
+
+    <!-- Role Field -->
+    <label for="role">Role:</label><br>
+    <input type="text" id="role" placeholder="applicant" value="applicant"><br><br>
+
+    <!-- Password Field -->
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" required><br><br>
+
+    <!-- Confirm Password Field -->
+    <label for="confirmPassword">Confirm Password:</label><br>
+    <input type="password" id="confirmPassword" required><br><br>
+
+    <button type="submit">Register</button>
+  </form>
+
+  <!-- Status / Error Messages -->
+  <p id="statusMsg"></p>
+
+  <script>
+    const form = document.getElementById('registrationForm');
+    const statusMsg = document.getElementById('statusMsg');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const role = document.getElementById('role').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      // Reset status message
+      statusMsg.textContent = '';
+      statusMsg.style.color = 'black';
+
+      // 1. Password Matching Validation
+      if (password !== confirmPassword) {
+        statusMsg.style.color = 'red';
+        statusMsg.textContent = 'Passwords do not match.';
+        return;
+      }
+
+      // 2. Send Data to Backend
+      try {
+        const response = await fetch('http://localhost:5000/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password, role })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          statusMsg.style.color = 'green';
+          statusMsg.textContent = data.message || 'Registration successful!';
+          form.reset();
+        } else {
+          statusMsg.style.color = 'red';
+          statusMsg.textContent = data.error || 'Registration failed.';
+        }
+      } catch (err) {
+        console.error('Connection error:', err);
+        statusMsg.style.color = 'red';
+        statusMsg.textContent = 'Server is unreachable. Please make sure the backend is running.';
+      }
+    });
+  </script>
+
+</body>
+</html>
