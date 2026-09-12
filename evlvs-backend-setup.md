@@ -185,6 +185,64 @@ module.exports = User;
 
 ---
 
+## Step 6: Create `index.js` and Test Table Creation
+
+Create `index.js` in the project root:
+
+```js
+// index.js
+const express = require('express');
+const sequelize = require('./db');
+const User = require('./models/User');
+
+const app = express();
+app.use(express.json());
+
+// Sync models with MySQL database
+sequelize.sync()
+  .then(() => console.log('Database & tables synced successfully!'))
+  .catch(err => console.error('Database sync error:', err));
+
+app.listen(5000, () => {
+  console.log('Server running on http://localhost:5000');
+});
+```
+
+### Before You Start: Ensure MySQL Is Running
+
+MySQL does **not** start automatically in WSL — it stops every time you close your WSL session or restart your machine, so you'll need to start it manually each time before running the app.
+
+Check if it's running:
+
+```bash
+sudo service mysql status
+```
+
+Start it if it's stopped:
+
+```bash
+sudo service mysql start
+```
+
+### Run and Verify
+
+Start the server with plain `node` or `nodemon`:
+
+```bash
+node index.js
+```
+
+You should see:
+
+```
+Server running on http://localhost:5000
+Database & tables synced successfully!
+```
+
+If you see this, `sequelize.sync()` has created the `Users` table in `evlvs_db` based on the `User` model.
+
+---
+
 ## Quick Reference: Folder Structure So Far
 
 ```
@@ -193,6 +251,7 @@ evlvs-backend/
 ├── models/
 │   └── User.js
 ├── db.js
+├── index.js
 ├── package.json
 └── .env            (recommended, not yet created above)
 ```
