@@ -109,6 +109,8 @@ sequelize.sync()
   .catch(err => console.error('Database sync error:', err));
 ```
 
+> This keeps the `{ User, Application }` import from the earlier sync step (so both tables still get created/synced) while adding the registration route on top — `index.js` now handles both jobs.
+
 ---
 
 ## Step 5: Test the Endpoint
