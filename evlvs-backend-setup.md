@@ -154,33 +154,34 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 
 const User = sequelize.define('User', {
-  id: {
+  user_id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
   email: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
     unique: true
   },
-  password: {
-    type: DataTypes.STRING,
+  password_hash: {
+    type: DataTypes.STRING(255),
     allowNull: false
+  },
+  role: {
+    type: DataTypes.ENUM('applicant', 'doc_reviewer', 'visa_staff', 'manager', 'admin'),
+    defaultValue: 'applicant'
   }
 }, {
-  tableName: 'users',
-  timestamps: true
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: false
 });
 
 module.exports = User;
 ```
 
-> Note: I filled in a reasonable starter schema (name/email/password) since none was specified — adjust the fields to match your actual data model.
+> `role` is an ENUM covering the app's user types: `applicant`, `doc_reviewer`, `visa_staff`, `manager`, `admin`. Only `created_at` is tracked (no `updated_at` column).
 
 ---
 
