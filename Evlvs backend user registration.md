@@ -138,6 +138,14 @@ Expected response:
 
 Sending the same request again should return a 400 with `"Email is already registered."`
 
+To confirm the row actually landed in MySQL, query the table directly:
+
+```bash
+mysql -u root -p -e "SELECT * FROM Users;" evlvs_db
+```
+
+You should see the row you just created, with the `password_hash` stored as a bcrypt hash rather than plain text.
+
 ---
 
 ## Folder Architecture
