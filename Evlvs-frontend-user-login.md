@@ -296,7 +296,7 @@ sudo service mysql start
 node index.js
 ```
 
-Open **http://localhost:5000/login.html**, log in with a registered user, and confirm you're redirected to the dashboard showing the user ID and role. Clearing `localStorage` (or clicking "Log Out") and reloading `dashboard.html` directly should bounce you back to the login page.
+Open **http://localhost:5000/login.html** and log in with the same test account used in the other docs — `test@example.com` / `password123` (register it first via `index.html` or the `curl` command in the registration guide if it doesn't exist yet) — and confirm you're redirected to the dashboard showing the user ID and role. Clearing `localStorage` (or clicking "Log Out") and reloading `dashboard.html` directly should bounce you back to the login page.
 
 ---
 
