@@ -2,7 +2,7 @@
 
 Adds `frontend/login.html`, which posts to `/api/auth/login` and stores the returned JWT in `localStorage`, then redirects to `frontend/dashboard.html` — a page that uses that saved token to fetch the protected `/api/auth/profile` endpoint.
 
-No `index.js` changes are needed — both pages are just new static files served from the existing `express.static(frontend/)` setup.
+No `index.js` changes are needed for these two pages themselves — they're just new static files served from the existing `express.static(frontend/)` setup. The last step below switches the site's default route over to `login.html` once everything's tested.
 
 ---
 
@@ -297,6 +297,18 @@ node index.js
 ```
 
 Open **http://localhost:5000/login.html**, log in with a registered user, and confirm you're redirected to the dashboard showing the user ID and role. Clearing `localStorage` (or clicking "Log Out") and reloading `dashboard.html` directly should bounce you back to the login page.
+
+---
+
+## Step 4: Serve the Login Page by Default
+
+Now that login and dashboard are tested, point `index.js`'s default route (`/`) at `login.html` instead of `index.html`, so visitors land on login first (registration is still reachable via the "Register here" link on that page):
+
+```js
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'login.html'));
+});
+```
 
 ---
 
