@@ -89,10 +89,10 @@ exports.verifyToken = (req, res, next) => {
 
 ---
 
-## Step 3: Create `routes/authRoutes.js`
+## Step 3: Create `routes/userAuthenticationRoutes.js`
 
 ```js
-// routes/authRoutes.js
+// routes/userAuthenticationRoutes.js
 const express = require('express');
 const router = express.Router();
 
@@ -115,7 +115,7 @@ module.exports = router;
 
 ---
 
-## Step 4: Mount `authRoutes` in `index.js`
+## Step 4: Mount `userAuthenticationRoutes` in `index.js`
 
 The pasted instructions stopped short of this, but it's needed for any of the above to actually be reachable — add the import and mount alongside the existing registration route:
 
@@ -126,7 +126,7 @@ const path = require('path');
 const sequelize = require('./db');
 const { User, Application } = require('./models');
 const userRegistrationRoutes = require('./routes/userRegistrationRoutes');
-const authRoutes = require('./routes/authRoutes');
+const userAuthenticationRoutes = require('./routes/userAuthenticationRoutes');
 
 const app = express();
 
@@ -135,7 +135,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 app.use('/api/register', userRegistrationRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', userAuthenticationRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
@@ -174,6 +174,8 @@ curl http://localhost:5000/api/auth/profile \
 
 You should get back `{ "message": "Welcome to your protected profile!", "user": { "userId": ..., "role": ... } }`. Calling `/api/auth/profile` without the header (or with a bad token) should return a 401 or 403 instead.
 
+> **Troubleshooting:** If `curl` returns an HTML `Cannot POST /api/auth/login` page, Express's route table has nothing matching that path — almost always because Step 4 (mounting `userAuthenticationRoutes` in `index.js`) wasn't actually applied to the running file, or the server wasn't restarted after adding it (`node index.js` doesn't hot-reload; `nodemon` does). Run `grep -n "userAuthenticationRoutes" index.js` to confirm both the `require` and `app.use('/api/auth', userAuthenticationRoutes)` lines are present.
+
 ---
 
 ## Folder Architecture
@@ -195,7 +197,7 @@ evlvs-backend/
 │   └── Application.js
 ├── routes/
 │   ├── userRegistrationRoutes.js
-│   └── authRoutes.js
+│   └── userAuthenticationRoutes.js
 ├── db.js
 ├── index.js
 └── package.json
