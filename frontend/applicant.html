@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EVLVS - Applicant Portal</title>
+  <link rel="stylesheet" href="stylesheet.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="topbar">
+    <div class="greeting">Hello, <strong id="greetingName">User</strong></div>
+    
+    <div class="topbar-right">
+      <button class="btn-primary" id="newAppBtn">
+        <span style="font-size: 18px; line-height: 1;">+</span> New application
+      </button>
+      
+      <!-- Profile Trigger -->
+      <div class="profile-trigger" id="profileToggle">
+        <div class="avatar" id="avatarIcon">--</div>
+        <span class="chevron">▼</span>
+      </div>
+      
+      <!-- Dropdown -->
+      <div class="dropdown" id="profileDropdown">
+        <div class="dropdown-header">
+          <div class="avatar" id="dropAvatar">--</div>
+          <div>
+            <strong id="dropName">User Name</strong>
+            <span id="dropEmail">user@example.com</span>
+          </div>
+        </div>
+        
+        <div class="dropdown-menu">
+          <div class="dropdown-item">
+            <span class="icon">✉</span>
+            <div class="item-text">Email <span id="menuEmail">user@example.com</span></div>
+          </div>
+          <div class="dropdown-item border-bottom">
+            <span class="icon">✆</span>
+            <div class="item-text">Phone <span id="menuPhone">+971 50 123 4567</span></div>
+          </div>
+          <div class="dropdown-item">
+            <span class="icon">⚙</span> Settings
+          </div>
+          <div class="dropdown-item border-bottom">
+            <span class="icon">?</span> Help & Support
+          </div>
+          <div class="dropdown-item" id="logoutBtn" style="color: #d93025;">
+            <span class="icon" style="color: #d93025;">↪</span> Log out
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tab Navigation -->
+  <nav class="tabs-container">
+    <button class="tab active" data-target="active-section">Active visa applications</button>
+    <button class="tab" data-target="history-section">Visa history</button>
+  </nav>
+
+  <!-- Main Content Sections -->
+  <main>
+    <section id="active-section" class="content-area active">
+      <p style="color: #5f6368;">No active applications found. Click "+ New application" to start.</p>
+    </section>
+
+    <section id="history-section" class="content-area">
+      <p style="color: #5f6368;">You have no past applications.</p>
+    </section>
+  </main>
+
+  <script>
+    // 1. Dropdown Toggle Logic
+    const profileToggle = document.getElementById('profileToggle');
+    const profileDropdown = document.getElementById('profileDropdown');
+    
+    profileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('active');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profileDropdown.contains(e.target) && !profileToggle.contains(e.target)) {
+        profileDropdown.classList.remove('active');
+      }
+    });
+
+    // 2. Tab Switching Logic
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.content-area');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.getAttribute('data-target')).classList.add('active');
+      });
+    });
+
+    // 3. Auth & Dynamic Data from localStorage
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    
+    if (!token || !userString) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
+    } else {
+      try {
+        const user = JSON.parse(userString);
+        const firstName = user.first_name || '';
+        const lastName = user.last_name || '';
+        const fullName = `${firstName} ${lastName}`.trim() || 'User';
+        const email = user.email || 'user@example.com';
+
+        // Generate initials for the avatar badges
+        const initialF = firstName ? firstName.charAt(0).toUpperCase() : '';
+        const initialL = lastName ? lastName.charAt(0).toUpperCase() : '';
+        const initials = `${initialF}${initialL}` || 'U';
+
+        // Update DOM elements
+        document.getElementById('greetingName').textContent = fullName;
+        document.getElementById('dropName').textContent = fullName;
+        document.getElementById('avatarIcon').textContent = initials;
+        document.getElementById('dropAvatar').textContent = initials;
+        document.getElementById('dropEmail').textContent = email;
+        document.getElementById('menuEmail').textContent = email;
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+        localStorage.clear();
+        window.location.href = '/login.html';
+      }
+    }
+
+    // Logout Handler
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
+    });
+  </script>
+</body>
+</html>

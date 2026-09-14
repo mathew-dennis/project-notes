@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EVLVS - User Portal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f9;
+    }
+    .portal-container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    #userInfo {
+      text-align: left;
+      background: #f9f9fb;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 12px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    #userInfo p {
+      margin: 6px 0;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #dc3545;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #a71d2a;
+    }
+    #message {
+      margin-top: 15px;
+      font-size: 14px;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="portal-container">
+    <h2>User Portal</h2>
+    <div id="userInfo">Loading profile...</div>
+    <button id="logoutBtn">Log Out</button>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const userInfoEl = document.getElementById('userInfo');
+    const messageEl = document.getElementById('message');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Retrieve saved token
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      // Bounce unauthenticated visitors back to login
+      window.location.href = '/login.html';
+    } else {
+      // Fetch protected profile data
+      fetch('/api/auth/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(async (response) => {
+          const data = await response.json();
+          if (response.ok) {
+            userInfoEl.innerHTML = `
+              <p><strong>User ID:</strong> ${data.user.userId}</p>
+              <p><strong>Role:</strong> ${data.user.role}</p>
+            `;
+          } else {
+            // Token expired or invalid
+            messageEl.textContent = data.message || 'Session expired. Please log in again.';
+            localStorage.removeItem('token');
+            setTimeout(() => {
+              window.location.href = '/login.html';
+            }, 1500);
+          }
+        })
+        .catch((err) => {
+          console.error('Profile fetch error:', err);
+          messageEl.textContent = 'Unable to connect to server.';
+        });
+    }
+
+    // Handle logout action
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location.href = '/login.html';
+    });
+  </script>
+
+</body>
+</html>

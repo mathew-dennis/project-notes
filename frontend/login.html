@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EVLVS - Login</title>
+  <link rel="stylesheet" href="stylesheet.css">
+</head>
+<body class="auth-body">
+
+  <div class="auth-container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required placeholder="Enter your password">
+      </div>
+      <button type="submit" class="btn-block">Log In</button>
+    </form>
+
+    <div id="message" class="auth-message"></div>
+
+    <div class="auth-link">
+      <p>Don't have an account? <a href="/index.html">Register here</a></p>
+    </div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const messageEl = document.getElementById('message');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      messageEl.textContent = 'Logging in...';
+      messageEl.style.color = 'black';
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user)); // Save user details
+
+          messageEl.style.color = 'green';
+          messageEl.textContent = 'Login successful! Redirecting...';
+
+          const userRole = data.user.role; 
+
+          setTimeout(() => {
+            switch (userRole) {
+              case 'admin':
+                window.location.href = '/admin.html';
+                break;
+              case 'applicant':
+                window.location.href = '/applicant.html';
+                break;
+              default:
+                window.location.href = '/applicant.html';
+                break;
+            }
+          }, 1000);
+        } else {
+          messageEl.style.color = 'red';
+          messageEl.textContent = data.message || 'Login failed.';
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        messageEl.style.color = 'red';
+        messageEl.textContent = 'Unable to connect to server.';
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -2,34 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>User Registration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EVLVS - Register</title>
+  <link rel="stylesheet" href="stylesheet.css">
 </head>
-<body>
+<body class="auth-body">
 
-  <h2>User Registration</h2>
+  <div class="auth-container">
+    <h2>Register</h2>
+    <form id="registrationForm">
+      
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input type="text" id="firstName" required placeholder="First name">
+      </div>
 
-  <form id="registrationForm">
-    <!-- Email Field -->
-    <label for="email">Email:</label><br>
-    <input type="email" id="email" required><br><br>
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input type="text" id="lastName" required placeholder="Last name">
+      </div>
 
-    <!-- Role Field -->
-    <label for="role">Role:</label><br>
-    <input type="text" id="role" placeholder="applicant" value="applicant"><br><br>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required placeholder="Enter your email">
+      </div>
 
-    <!-- Password Field -->
-    <label for="password">Password:</label><br>
-    <input type="password" id="password" required><br><br>
+      <div class="form-group">
+        <label for="role">Role</label>
+        <input type="text" id="role" placeholder="applicant" value="applicant">
+      </div>
 
-    <!-- Confirm Password Field -->
-    <label for="confirmPassword">Confirm Password:</label><br>
-    <input type="password" id="confirmPassword" required><br><br>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required placeholder="Create a password">
+      </div>
 
-    <button type="submit">Register</button>
-  </form>
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" required placeholder="Confirm your password">
+      </div>
 
-  <!-- Status / Error Messages -->
-  <p id="statusMsg"></p>
+      <button type="submit" class="btn-block">Register</button>
+    </form>
+
+    <div id="statusMsg" class="auth-message"></div>
+
+    <div class="auth-link">
+      <p>Already have an account? <a href="/login.html">Log in here</a></p>
+    </div>
+  </div>
 
   <script>
     const form = document.getElementById('registrationForm');
@@ -38,6 +59,8 @@
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
 
+      const first_name = document.getElementById('firstName').value;
+      const last_name = document.getElementById('lastName').value;
       const email = document.getElementById('email').value;
       const role = document.getElementById('role').value;
       const password = document.getElementById('password').value;
@@ -61,7 +84,7 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ email, password, role })
+          body: JSON.stringify({ first_name, last_name, email, password, role })
         });
 
         const data = await response.json();
