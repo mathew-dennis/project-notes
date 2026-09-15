@@ -4,6 +4,7 @@ const sequelize = require('./db');
 const { User, Application } = require('./models'); // Load models + associations
 const userRegistrationRoutes = require('./routes/userRegistrationRoutes'); // Import route
 const userAuthenticationRoutes = require('./routes/userAuthenticationRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
 
 const app = express();
 app.use(express.json());
@@ -15,8 +16,10 @@ app.use(express.static(path.join(__dirname, 'frontend')));
 app.use('/api/register', userRegistrationRoutes);
 // Mount the user authentication routes
 app.use('/api/auth', userAuthenticationRoutes);
+// Protected application routes.
+app.use('/api/applications', applicationRoutes);
 
-// Default route loads frontend/login.html
+// Default route loads frontend/index.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'login.html'));
 });
