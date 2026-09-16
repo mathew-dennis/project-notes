@@ -260,3 +260,39 @@ body {
 .content-area.active {
   display: block;
 }
+/* --- 4. New Application Modal & Application Cards --- */
+dialog#newAppModal {
+  border: none;
+  border-radius: 8px;
+  padding: 30px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+dialog#newAppModal::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+dialog#newAppModal h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.app-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+
+.app-status {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}

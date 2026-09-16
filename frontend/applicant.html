@@ -73,6 +73,32 @@
     </section>
   </main>
 
+  <!-- New Application Modal -->
+  <dialog id="newAppModal">
+    <h2>New Visa Application</h2>
+    <form id="newAppForm">
+      <div class="form-group">
+        <label for="visaType">Visa Type</label>
+        <input type="text" id="visaType" required placeholder="e.g. Tourist">
+      </div>
+      <div class="form-group">
+        <label for="passportNumber">Passport Number</label>
+        <input type="text" id="passportNumber" required placeholder="e.g. P1234567">
+      </div>
+      <div class="form-group">
+        <label for="photoInput">Photo</label>
+        <input type="file" id="photoInput" accept="image/*" required>
+      </div>
+      <div class="form-group">
+        <label for="passportInput">Passport Document</label>
+        <input type="file" id="passportInput" accept="image/*,.pdf" required>
+      </div>
+      <button type="submit" class="btn-block">Submit Application</button>
+      <button type="button" id="cancelAppBtn" class="btn-block" style="background-color: #5f6368; margin-top: 8px;">Cancel</button>
+    </form>
+    <div id="newAppMsg" class="auth-message"></div>
+  </dialog>
+
   <script>
     // 1. Dropdown Toggle Logic
     const profileToggle = document.getElementById('profileToggle');
@@ -130,6 +156,9 @@
         document.getElementById('dropAvatar').textContent = initials;
         document.getElementById('dropEmail').textContent = email;
         document.getElementById('menuEmail').textContent = email;
+
+        // Load the user's applications now that we know who they are
+        loadApplications();
       } catch (err) {
         console.error('Error parsing user data:', err);
         localStorage.clear();
@@ -143,6 +172,93 @@
       localStorage.removeItem('user');
       window.location.href = '/login.html';
     });
+    // 4. New Application Modal
+    const newAppBtn = document.getElementById('newAppBtn');
+    const newAppModal = document.getElementById('newAppModal');
+    const newAppForm = document.getElementById('newAppForm');
+    const newAppMsg = document.getElementById('newAppMsg');
+    const cancelAppBtn = document.getElementById('cancelAppBtn');
+
+    newAppBtn.addEventListener('click', () => {
+      newAppForm.reset();
+      newAppMsg.textContent = '';
+      newAppModal.showModal();
+    });
+
+    cancelAppBtn.addEventListener('click', () => {
+      newAppModal.close();
+    });
+
+    newAppForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      newAppMsg.style.color = 'black';
+      newAppMsg.textContent = 'Submitting...';
+
+      const user = JSON.parse(localStorage.getItem('user'));
+      const formData = new FormData();
+      formData.append('first_name', user.first_name);
+      formData.append('last_name', user.last_name);
+      formData.append('visa_type', document.getElementById('visaType').value);
+      formData.append('passport_number', document.getElementById('passportNumber').value);
+      formData.append('photo', document.getElementById('photoInput').files[0]);
+      formData.append('passport', document.getElementById('passportInput').files[0]);
+
+      try {
+        const response = await fetch('/api/applications', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          newAppMsg.style.color = 'green';
+          newAppMsg.textContent = 'Application submitted!';
+          loadApplications();
+          setTimeout(() => newAppModal.close(), 800);
+        } else {
+          newAppMsg.style.color = 'red';
+          newAppMsg.textContent = data.error || 'Failed to submit application.';
+        }
+      } catch (err) {
+        console.error('Application submit error:', err);
+        newAppMsg.style.color = 'red';
+        newAppMsg.textContent = 'Unable to connect to server.';
+      }
+    });
+
+    // 5. Fetch & Render Applications (Active vs. History)
+    async function loadApplications() {
+      try {
+        const response = await fetch('/api/applications', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (!response.ok) return;
+
+        const active = data.applications.filter(a => a.status !== 'approved' && a.status !== 'rejected');
+        const history = data.applications.filter(a => a.status === 'approved' || a.status === 'rejected');
+
+        renderApplications('active-section', active, 'No active applications found. Click "+ New application" to start.');
+        renderApplications('history-section', history, 'You have no past applications.');
+      } catch (err) {
+        console.error('Failed to load applications:', err);
+      }
+    }
+
+    function renderApplications(sectionId, list, emptyMessage) {
+      const section = document.getElementById(sectionId);
+      if (list.length === 0) {
+        section.innerHTML = `<p style="color: #5f6368;">${emptyMessage}</p>`;
+        return;
+      }
+      section.innerHTML = list.map(app => `
+        <div class="app-card">
+          <div><strong>${app.visa_type}</strong> — ${app.passport_number}</div>
+          <div class="app-status">${app.status}</div>
+        </div>
+      `).join('');
+    }
   </script>
 </body>
 </html>
