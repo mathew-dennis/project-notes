@@ -280,19 +280,87 @@ dialog#newAppModal h2 {
 }
 
 .app-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px 20px;
-  margin-bottom: 12px;
+  border: 1px solid #e8eaed;
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.app-status {
+.app-card-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 220px;
+}
+
+.app-icon-badge {
+  width: 40px;
+  height: 40px;
+  background: #e8f0fe;
+  color: var(--primary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.app-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.app-sub {
   font-size: 13px;
-  font-weight: 600;
   color: var(--text-muted);
-  text-transform: capitalize;
+  margin-bottom: 8px;
+}
+
+.app-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: #e8f0fe;
+  color: var(--primary);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.app-card-col {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0 24px;
+  border-left: 1px solid #f1f3f4;
+}
+
+.cal-icon {
+  color: #9aa0a6;
+  font-size: 16px;
+  margin-top: 2px;
+}
+
+.col-label {
+  font-size: 12px;
+  color: #80868b;
+  margin-bottom: 2px;
+}
+
+.col-val {
+  font-size: 13px;
+  font-weight: 500;
+  color: #3c4043;
+}
+
+.app-arrow {
+  color: #9aa0a6;
+  font-size: 18px;
+  cursor: pointer;
 }
