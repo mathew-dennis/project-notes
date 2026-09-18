@@ -25,7 +25,7 @@ const getPendingApplications = async (req, res) => {
     const pendingApps = await Application.findAll({
       where: statusTarget,
       include: [{ model:User }],
-      order: [['createdAt', 'ASC']]
+      order: [['created_at', 'ASC']]
     });
 
     return res.status(200).json({ success: true, count: pendingApps.length, data: pendingApps });
@@ -94,9 +94,9 @@ const updateApplicationStatus = async (req, res) => {
 
     // Status mapping based on reviewer role and decision
     const statusMap = {
-      doc_reviewer: { approved: 'Docs_Verified', rejected: 'Docs_Rejected' },
-      visa_staff:   { approved: 'Staff_Reviewed', rejected: 'Visa_Rejected' },
-      manager:      { approved: 'Approved',       rejected: 'Manager_Rejected' }
+      doc_reviewer: { approved: 'Docs_Verified',      rejected: 'Docs_Rejected' },
+      visa_staff:   { approved: 'Staff_Reviewed',     rejected: 'Visa_Rejected' },
+      manager:      { approved: 'Manager_Approved',   rejected: 'Manager_Rejected' }
     };
 
     const userRole = req.user?.role;

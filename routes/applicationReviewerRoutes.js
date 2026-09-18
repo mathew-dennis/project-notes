@@ -20,7 +20,7 @@ router.get('/pending-applications', verifyToken,  verifyRole(allowedRoles), revi
 router.get('/documents/:id/:type', verifyToken, verifyRole(allowedRoles), reviewerController.viewDocument);
 
 //this route allows updtating the status of application by the staff
-//example use-->  GET /api/applicationReview/update-application-status/12/approved
+//example use-->  POST /api/applicationReview/update-application-status/12/approved
 router.post('/update-application-status/:id/:decision', verifyToken, verifyRole(allowedRoles), reviewerController.updateApplicationStatus);
 
 
