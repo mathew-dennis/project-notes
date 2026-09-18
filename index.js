@@ -5,6 +5,7 @@ const { User, Application } = require('./models'); // Load models + associations
 const userRegistrationRoutes = require('./routes/userRegistrationRoutes'); // Import route
 const userAuthenticationRoutes = require('./routes/userAuthenticationRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
+const applicationReviewRoutes = require('./routes/applicationReviewRoutes');
 
 const app = express();
 app.use(express.json());
@@ -18,6 +19,8 @@ app.use('/api/register', userRegistrationRoutes);
 app.use('/api/auth', userAuthenticationRoutes);
 // Protected application routes.
 app.use('/api/applications', applicationRoutes);
+// Protected application routes.
+app.use('/api/applicationReview', applicationReviewRoutes);
 
 // Default route loads frontend/index.html
 app.get('/', (req, res) => {
