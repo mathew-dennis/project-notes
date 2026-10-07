@@ -3,28 +3,30 @@ const fs = require('fs');
 const path = require('path');
 const { Application, User } = require('../models');
 
+// Status each role is allowed to act on (i.e. set by the previous stage)
+const queueStatus = {
+  doc_reviewer: 'Submitted',
+  visa_staff: 'Docs_Verified',
+  manager: 'Staff_Reviewed'
+};
+
 // 1. Fetch applications based on user role
 const getPendingApplications = async (req, res) => {
-  const statusMap = {
-    doc_reviewer: 'Submitted',
-    visa_staff: 'Docs_Verified',
-    manager: 'Staff_Reviewed'
-  };
-
   const userRole = req.user?.role;
 
   // Block users without an authorized role
-  if (!statusMap[userRole] && userRole !== 'admin') {
+  if (!queueStatus[userRole] && userRole !== 'admin') {
     return res.status(403).json({ success: false, message: 'Unauthorized role' });
   }
 
   try {
     // Admin gets empty where clause (all records); specific roles filter by mapped status
-    const statusTarget = userRole === 'admin' ? {} : { status: statusMap[userRole] };
+    const statusTarget = userRole === 'admin' ? {} : { status: queueStatus[userRole] };
 
     const pendingApps = await Application.findAll({
       where: statusTarget,
-      include: [{ model:User }],
+      attributes: { exclude: ['photo_path', 'doc_path'] },
+      include: [{ model: User, attributes: ['first_name', 'last_name', 'email'] }],
       order: [['created_at', 'ASC']]
     });
 
@@ -72,12 +74,19 @@ const viewDocument = async (req, res) => {
       return res.status(404).json({ success: false, message: `No ${type} record found.` });
     }
 
+    // Inspect file extension inside stored metadata
+    const fileMeta = JSON.parse(rawJsonData);
+    const ext = path.extname(fileMeta.path).toLowerCase();
+
     const decryptedBuffer = decryptFile(rawJsonData);
 
-    if (type === 'photo') {
-      res.setHeader('Content-Type', 'image/jpeg');
-    } else if (type === 'passport') {
+// Set dynamic Content-Type header
+    if (ext === '.pdf') {
       res.setHeader('Content-Type', 'application/pdf');
+    } else if (ext === '.png') {
+      res.setHeader('Content-Type', 'image/png');
+    } else {
+      res.setHeader('Content-Type', 'image/jpeg');
     }
 
     return res.send(decryptedBuffer);
@@ -109,6 +118,11 @@ const updateApplicationStatus = async (req, res) => {
     const application = await Application.findByPk(id);
     if (!application) {
       return res.status(404).json({ success: false, message: 'Application not found.' });
+    }
+
+    // Only act on applications the previous stage has passed on
+    if (application.status !== queueStatus[userRole]) {
+      return res.status(409).json({ success: false, message: 'Application is not awaiting your review.' });
     }
 
     application.status = roleStatuses[decision];

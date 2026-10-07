@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EVLVS - Review Portal</title>
+  <link rel="stylesheet" href="stylesheet.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="greeting">Hello, <strong id="greetingName">User</strong></div>
+    <div class="topbar-right"><button class="btn-primary" id="logoutBtn">Log out</button></div>
+  </header>
+
+  <main><section id="list" class="content-area active"></section></main>
+
+  <dialog id="reviewModal" style="border:none;border-radius:8px;padding:24px;width:100%;max-width:480px">
+    <img id="photo" alt="Applicant photo" style="width:100%;max-height:260px;object-fit:contain;border-radius:8px;background:#f1f3f4">
+    <div id="details" style="margin:16px 0;line-height:1.7"></div>
+    <button type="button" class="btn-block" id="passportBtn">View passport</button>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button type="button" class="btn-block" id="approveBtn" style="background:#188038">Approve</button>
+      <button type="button" class="btn-block" id="rejectBtn" style="background:#d93025">Reject</button>
+    </div>
+    <button type="button" class="btn-block" id="closeBtn" style="background:#5f6368;margin-top:8px">Close</button>
+    <div id="msg" class="auth-message"></div>
+  </dialog>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const api = '/api/applicationReview';
+    const auth = { Authorization: `Bearer ${token}` };
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+    let apps = [], current = null;
+
+    const logout = () => { localStorage.clear(); location.href = '/login.html'; };
+    $('logoutBtn').onclick = logout;
+    if (!token || !['doc_reviewer', 'visa_staff', 'manager', 'admin'].includes(user?.role)) logout();
+    $('greetingName').textContent = `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'User';
+
+    async function load() {
+      const res = await fetch(`${api}/pending-applications`, { headers: auth });
+      if (res.status === 401) return logout();
+      apps = (await res.json()).data || [];
+      $('list').innerHTML = apps.length ? apps.map((a, i) => `
+        <div class="app-card" style="cursor:pointer" onclick="openApp(${i})">
+          <div class="app-card-left">
+            <div class="app-icon-badge">📄</div>
+            <div>
+              <div class="app-title">${esc(a.visa_type)}</div>
+              <div class="app-sub">Application No. ${a.app_id} · ${esc(a.User.first_name)} ${esc(a.User.last_name)}</div>
+              <span class="app-status-badge">• ${esc(a.status)}</span>
+            </div>
+          </div>
+          <div class="app-arrow">›</div>
+        </div>`).join('') : '<p style="color:#5f6368">No applications awaiting your review.</p>';
+    }
+
+    // <img> and new tabs can't send the Authorization header, so fetch the file and use a blob URL
+    const fileUrl = async type => URL.createObjectURL(
+      await (await fetch(`${api}/documents/${current.app_id}/${type}`, { headers: auth })).blob());
+
+    async function openApp(i) {
+      current = apps[i];
+      $('msg').textContent = '';
+      $('photo').removeAttribute('src');
+      $('details').innerHTML = [
+        ['Name', `${current.User.first_name} ${current.User.last_name}`],
+        ['Email', current.User.email],
+        ['Visa type', current.visa_type],
+        ['Passport no.', current.passport_number],
+        ['Status', current.status],
+        ['Created', new Date(current.created_at).toLocaleDateString('en-GB')]
+      ].map(([k, v]) => `<div><strong>${k}:</strong> ${esc(v)}</div>`).join('');
+      $('reviewModal').showModal();
+      $('photo').src = await fileUrl('photo');
+    }
+
+    $('passportBtn').onclick = async () => {
+      const w = window.open('', '_blank'); // open first so the popup isn't blocked
+      w.location = await fileUrl('passport');
+    };
+
+    async function decide(decision) {
+      $('msg').textContent = 'Saving...';
+      const res = await fetch(`${api}/update-application-status/${current.app_id}/${decision}`, { method: 'POST', headers: auth });
+      const data = await res.json();
+      if (res.ok) { $('reviewModal').close(); load(); }
+      else $('msg').textContent = data.message || 'Failed.';
+    }
+
+    $('approveBtn').onclick = () => decide('approved');
+    $('rejectBtn').onclick = () => decide('rejected');
+    $('closeBtn').onclick = () => $('reviewModal').close();
+
+    load();
+  </script>
+</body>
+</html>
