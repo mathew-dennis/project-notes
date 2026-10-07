@@ -27,6 +27,10 @@ const User = sequelize.define('User', {
   role: {
     type: DataTypes.ENUM('applicant', 'doc_reviewer', 'visa_staff', 'manager', 'admin'),
     defaultValue: 'applicant'
+  },
+  is_active: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
   }
 }, {
   timestamps: true,

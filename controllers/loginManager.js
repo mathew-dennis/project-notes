@@ -29,7 +29,7 @@ exports.handleLogin = async (req, res) => {
     return res.status(200).json({
       message: 'Login successful!',
       token,
-      user: { id: user.user_id, email: user.email,first_name: user.first_name, last_name: user.last_name, role: user.role }
+      user: { id: user.user_id, email: user.email, first_name: user.first_name, last_name: user.last_name, role: user.role }
     });
   } catch (error) {
     console.error('Login error:', error);

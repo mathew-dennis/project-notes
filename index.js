@@ -6,6 +6,7 @@ const userRegistrationRoutes = require('./routes/userRegistrationRoutes'); // Im
 const userAuthenticationRoutes = require('./routes/userAuthenticationRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const applicationReviewRoutes = require('./routes/applicationReviewRoutes');
+const adminUserRoutes = require('./routes/adminUserRoutes');
 
 const app = express();
 app.use(express.json());
@@ -21,6 +22,8 @@ app.use('/api/auth', userAuthenticationRoutes);
 app.use('/api/applications', applicationRoutes);
 // Protected application routes.
 app.use('/api/applicationReview', applicationReviewRoutes);
+// Protected admin routes.
+app.use('/api/admin', adminUserRoutes);
 
 // Default route loads frontend/index.html
 app.get('/', (req, res) => {
